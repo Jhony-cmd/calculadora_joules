@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Joules</title>
+    <link rel="manifest" href="data:application/json;base64,eyJzY29wZSI6Ii8iLCJuYW1lIjoiQ2FsY3VsYWRvcmEgZGUgSm91bGVzIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJzdGFydF91cmwiOiIuL2luZGV4Lmh0bWwiLCJpY29ucyI6W3sic3JjIjoiaWNvbi5wbmciLCJzaXplcyI6IjE5MngxOTAiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #ff6b6b;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tab-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .tab-btn:hover {
+            border-color: #ff6b6b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b6b;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            color: #ff6b6b;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 10px;
+        }
+
+        .result-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .result-label {
+            color: #666;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .result-value {
+            color: #ff6b6b;
+            font-weight: 700;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-top: 15px;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .formula-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #ff6b6b;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .formula-title {
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-bottom: 8px;
+        }
+
+        .energy-visualization {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #ff6b6b;
+        }
+
+        .energy-label {
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .energy-bar {
+            width: 100%;
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+            transition: width 0.3s ease;
+        }
+
+        .energy-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .energy-info {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .result-value {
+                margin-top: 5px;
+            }
+
+            .tab-btn {
+                min-width: 100px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Calculadora de Joules</h1>
+            <p>Calcule Energia, Capacitância ou Tensão</p>
+        </div>
+
+        <div class="tab-selector">
+            <button type="button" class="tab-btn active" onclick="setTab('energia')">🔋 Energia</button>
+            <button type="button" class="tab-btn" onclick="setTab('capacitancia')">📦 Capacitância</button>
+            <button type="button" class="tab-btn" onclick="setTab('tensao')">⚙️ Tensão</button>
+        </div>
+
+        <div id="energiaTab" class="tab-content">
+            <form id="energiaForm">
+                <div class="form-group">
+                    <label for="tensaoEnergia">Tensão (V):</label>
+                    <input type="number" id="tensaoEnergia" placeholder="" step="any" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="capacitanciaEnergia">Capacitância (µF):</label>
+                    <input type="number" id="capacitanciaEnergia" placeholder="" step="any" min="0" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-calculate" onclick="calcularEnergia()">Calcular</button>
+                    <button type="reset" class="btn-reset">Limpar</button>
+                </div>
+            </form>
+
+            <div class="error" id="energiaErrorBox"></div>
+
+            <div class="results" id="energiaResults">
+                <div class="result-title">RESULTADO - ENERGIA (JOULES)</div>
+                
+                <div class="result-item">
+                    <span class="result-label">Tensão (V):</span>
+                    <span class="result-value" id="energiaTensaoResult"></span>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Capacitância (µF):</span>
+                    <span class="result-value" id="energiaCapacitanciaResult"></span>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Energia (Joules):</span>
+                    <span class="result-value" id="energiaJoulesResult"></span>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Fórmula Utilizada:</div>
+                    E = (V² × C) / 2<br>
+                    <br>
+                    Onde:<br>
+                    E = Energia em Joules<br>
+                    V = Tensão em Volts<br>
+                    C = Capacitância em Farads
+                </div>
+
+                <div class="energy-visualization">
+                    <div class="energy-label">Visualização da Energia</div>
+                    <div class="energy-bar">
+                        <div class="energy-fill" id="energiaVisualization"></div>
+                        <div class="energy-text" id="energiaVisText"></div>
+                    </div>
+                    <div class="energy-info" id="energiaVisInfo"></div>
+                </div>
+
+                <div class="info-box">
+                    💡 Energia armazenada nos capacitores!
+                </div>
+            </div>
+        </div>
+
+        <div id="capacitanciaTab" class="tab-content hidden">
+            <form id="capacitanciaForm">
+                <div class="form-group">
+                    <label for="tensaoCapacitancia">Tensão (V):</label>
+                    <input type="number" id="tensaoCapacitancia" placeholder="" step="0.01" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="energiaCapacitancia">Energia (Joules):</label>
+                    <input type="number" id="energiaCapacitancia" placeholder="" step="1" min="0" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-calculate" onclick="calcularCapacitancia()">Calcular</button>
+                    <button type="reset" class="btn-reset">Limpar</button>
+                </div>
+            </form>
+
+            <div class="error" id="capacitanciaErrorBox"></div>
+
+            <div class="results" id="capacitanciaResults">
+                <div class="result-title">RESULTADO - CAPACITÂNCIA (µF)</div>
+                
+                <div class="result-item">
+                    <span class="result-label">Tensão (V):</span>
+                    <span class="result-value" id="capacitanciaTensaoResult"></span>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Energia (Joules):</span>
+                    <span class="result-value" id="capacitanciaEnergiaResult"></span>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Capacitância (µF):</span>
+                    <span class="result-value" id="capacitanciaCapacitanciaResult"></span>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Fórmula Utilizada:</div>
+                    C = (2 × E) / V²<br>
+                    <br>
+                    Onde:<br>
+                    C = Capacitância em Farads<br>
+                    E = Energia em Joules<br>
+                    V = Tensão em Volts
+                </div>
+
+                <div class="info-box">
+                    💡 Capacitância necessária para armazenar uma determinada energia!
+                </div>
+            </div>
+        </div>
+
+        <div id="tensaoTab" class="tab-content hidden">
+            <form id="tensaoForm">
+                <div class="form-group">
+                    <label for="energiaTensao">Energia (Joules):</label>
+                    <input type="number" id="energiaTensao" placeholder="" step="1" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="capacitanciaTensao">Capacitância (µF):</label>
+                    <input type="number" id="capacitanciaTensao" placeholder="" step="0.0001" min="0" required>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-calculate" onclick="calcularTensao()">Calcular</button>
+                    <button type="reset" class="btn-reset">Limpar</button>
+                </div>
+            </form>
+
+            <div class="error" id="tensaoErrorBox"></div>
+
+            <div class="results" id="tensaoResults">
+                <div class="result-title">RESULTADO - TENSÃO (VOLTS)</div>
+                
+                <div class="result-item">
+                    <span class="result-label">Energia (Joules):</span>
+                    <span class="result-value" id="tensaoEnergiaResult"></span>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Capacitância (µF):</span>
+                    <span class="result-value" id="tensaoCapacitanciaResult"></span>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Tensão (V):</span>
+                    <span class="result-value" id="tensaoTensaoResult"></span>
+                </div>
+
+                <div class="formula-box">
+                    <div class="formula-title">Fórmula Utilizada:</div>
+                    V = √(2 × E / C)<br>
+                    <br>
+                    Onde:<br>
+                    V = Tensão em Volts<br>
+                    E = Energia em Joules<br>
+                    C = Capacitância em Farads
+                </div>
+
+                <div class="info-box">
+                    💡 Tensão necessária para armazenar uma determinada energia!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setTab(tab) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(t => t.classList.add('hidden'));
+            
+            if (tab === 'energia') {
+                document.getElementById('energiaTab').classList.remove('hidden');
+            } else if (tab === 'capacitancia') {
+                document.getElementById('capacitanciaTab').classList.remove('hidden');
+            } else if (tab === 'tensao') {
+                document.getElementById('tensaoTab').classList.remove('hidden');
+            }
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function calcularEnergia() {
+            const tensaoInput = document.getElementById('tensaoEnergia').value;
+            const capacitanciaInput = document.getElementById('capacitanciaEnergia').value;
+            
+            const tensao = parseFloat(tensaoInput);
+            const capacitancia = parseFloat(capacitanciaInput);
+
+            const errorBox = document.getElementById('energiaErrorBox');
+            const resultsDiv = document.getElementById('energiaResults');
+
+            if (isNaN(tensao) || isNaN(capacitancia) || tensao <= 0 || capacitancia <= 0) {
+                errorBox.textContent = '❌ Por favor, preencha todos os campos com valores válidos e maiores que zero.';
+                errorBox.classList.add('show');
+                resultsDiv.classList.remove('show');
+                return;
+            }
+
+            errorBox.classList.remove('show');
+
+            // Fórmula direta: E = (V² × C) / 2
+            // Onde C já está em µF, não precisa converter
+            const energia = (tensao * tensao * capacitancia) / 2;
+
+            // Exibir resultados
+            document.getElementById('energiaTensaoResult').textContent = `${tensao.toFixed(3)} V`;
+            document.getElementById('energiaCapacitanciaResult').textContent = `${capacitancia.toFixed(4)} µF`;
+            document.getElementById('energiaJoulesResult').textContent = `${energia.toFixed(0)} J`;
+
+            const maxEnergia = Math.max(energia, 10000);
+            const percentual = (energia / maxEnergia) * 100;
+            document.getElementById('energiaVisualization').style.width = `${percentual}%`;
+            document.getElementById('energiaVisText').textContent = `${energia.toFixed(0)} J`;
+            document.getElementById('energiaVisInfo').textContent = `Energia armazenada: ${energia.toFixed(0)} Joules`;
+
+            resultsDiv.classList.add('show');
+        }
+
+        function calcularCapacitancia() {
+            const tensao = parseFloat(document.getElementById('tensaoCapacitancia').value);
+            const energia = parseFloat(document.getElementById('energiaCapacitancia').value);
+
+            const errorBox = document.getElementById('capacitanciaErrorBox');
+            const resultsDiv = document.getElementById('capacitanciaResults');
+
+            if (isNaN(tensao) || isNaN(energia) || tensao < 0 || energia < 0) {
+                errorBox.textContent = '❌ Por favor, preencha todos os campos com valores válidos.';
+                errorBox.classList.add('show');
+                resultsDiv.classList.remove('show');
+                return;
+            }
+
+            if (tensao === 0) {
+                errorBox.textContent = '❌ A tensão não pode ser zero.';
+                errorBox.classList.add('show');
+                resultsDiv.classList.remove('show');
+                return;
+            }
+
+            errorBox.classList.remove('show');
+
+            // Calcular capacitância: C = (2 × E) / V²
+            // Resultado já em µF
+            const capacitancia = (2 * energia) / (tensao * tensao);
+
+            document.getElementById('capacitanciaTensaoResult').textContent = `${tensao.toFixed(3)} V`;
+            document.getElementById('capacitanciaEnergiaResult').textContent = `${energia.toFixed(0)} J`;
+            document.getElementById('capacitanciaCapacitanciaResult').textContent = `${capacitancia.toFixed(4)} µF`;
+
+            resultsDiv.classList.add('show');
+        }
+
+        function calcularTensao() {
+            const energia = parseFloat(document.getElementById('energiaTensao').value);
+            const capacitancia = parseFloat(document.getElementById('capacitanciaTensao').value);
+
+            const errorBox = document.getElementById('tensaoErrorBox');
+            const resultsDiv = document.getElementById('tensaoResults');
+
+            if (isNaN(energia) || isNaN(capacitancia) || energia < 0 || capacitancia < 0) {
+                errorBox.textContent = '❌ Por favor, preencha todos os campos com valores válidos.';
+                errorBox.classList.add('show');
+                resultsDiv.classList.remove('show');
+                return;
+            }
+
+            if (capacitancia === 0) {
+                errorBox.textContent = '❌ A capacitância não pode ser zero.';
+                errorBox.classList.add('show');
+                resultsDiv.classList.remove('show');
+                return;
+            }
+
+            errorBox.classList.remove('show');
+
+            // Calcular tensão: V = √((2 × E) / C)
+            // C já está em µF
+            const tensao = Math.sqrt((2 * energia) / capacitancia);
+
+            document.getElementById('tensaoEnergiaResult').textContent = `${energia.toFixed(0)} J`;
+            document.getElementById('tensaoCapacitanciaResult').textContent = `${capacitancia.toFixed(4)} µF`;
+            document.getElementById('tensaoTensaoResult').textContent = `${tensao.toFixed(3)} V`;
+
+            resultsDiv.classList.add('show');
+        }
+
+        document.getElementById('energiaForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                calcularEnergia();
+            }
+        });
+
+        document.getElementById('capacitanciaForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                calcularCapacitancia();
+            }
+        });
+
+        document.getElementById('tensaoForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                calcularTensao();
+            }
+        });
+    </script>
+</body>
+</html>
